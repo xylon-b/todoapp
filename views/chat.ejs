@@ -1,107 +1,104 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
-        integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+      integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+      crossorigin="anonymous"
+    />
 
-    <script src="https://kit.fontawesome.com/f0616e68f9.js" crossorigin="anonymous"></script>
+    <script
+      src="https://kit.fontawesome.com/f0616e68f9.js"
+      crossorigin="anonymous"
+    ></script>
 
-    <link href="/public/main.css" rel="stylesheet">
+    <link href="/public/main.css" rel="stylesheet" />
 
-    <title>미무 | MEMO Chat Service</title>
-</head>
+    <title>미무 | MEMOU Chat Service</title>
+  </head>
 
-<body>
-
+  <body>
     <%- include('nav.html') %>
 
-        <div class="container p-4 detail">
-
-            <div class="row">
-                <div class="col-3">
-                    <ul class="list-group chat-list">
-                        <% for(let i=0; i < data.length; i++){ %>
-                            <li class="list-group-item" data-id="<%= data[i]._id %>">
-                                <h6>
-                                    <%= data[i].title %>
-                                </h6>
-                                <h6 class="text-small">
-                                    <%= data[i].member[0] %>
-                                </h6>
-                            </li>
-                            <% } %>
-
-                    </ul>
-                </div>
-
-                <div class="col-9 p-0">
-                    <div class="chat-room">
-                        <ul class="list-group chat-content">
-                            <li><span class="chat-box">채팅방1 내용</span></li>
-                            <li><span class="chat-box">채팅방1 내용</span></li>
-                            <li><span class="chat-box mine">채팅방1 내용</span></li>
-                        </ul>
-                        <div class="input-group">
-                            <input class="form-control" id="chat-input">
-                            <button class="btn btn-secondary sending" id="send">전송</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+    <div class="container p-4 detail">
+      <div class="row">
+        <div class="col-3">
+          <ul class="list-group chat-list">
+            <% for(let i=0; i < data.length; i++){ %>
+            <li class="list-group-item" data-id="<%= data[i]._id %>">
+              <h6><%= data[i].title %></h6>
+              <h6 class="text-small"><%= data[i].member[0] %></h6>
+            </li>
+            <% } %>
+          </ul>
         </div>
 
-        <script>
-            $('.sending').click(function () {
+        <div class="col-9 p-0">
+          <div class="chat-room">
+            <ul class="list-group chat-content">
+              <li><span class="chat-box">채팅방1 내용</span></li>
+              <li><span class="chat-box">채팅방1 내용</span></li>
+              <li><span class="chat-box mine">채팅방1 내용</span></li>
+            </ul>
+            <div class="input-group">
+              <input class="form-control" id="chat-input" />
+              <button class="btn btn-secondary sending" id="send">전송</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-                var 채팅내용 = $('#chat-input').val();   //1, 2
-                var 보낼거 = {
-                    parent: 지금누른채팅방id,
-                    content: 채팅내용,
-                    //chatTitle: 지금누른채팅방title,
-                };
+    <script>
+      $(".sending").click(function () {
+        var 채팅내용 = $("#chat-input").val(); //1, 2
+        var 보낼거 = {
+          parent: 지금누른채팅방id,
+          content: 채팅내용,
+          //chatTitle: 지금누른채팅방title,
+        };
 
-                //3
-                $.post('/message', 보낼거).then((a) => {
-                    console.log(a)
-                });
-            });
+        //3
+        $.post("/message", 보낼거).then((a) => {
+          console.log(a);
+        });
+      });
 
+      //4
+      var 지금누른채팅방id;
+      var eventSouce;
 
-            //4
-            var 지금누른채팅방id;
-            var eventSouce;
+      $(".list-group-item").click(function () {
+        지금누른채팅방id = this.dataset.id;
+        $(".chat-content").html("");
 
-            $('.list-group-item').click(function () {
-                지금누른채팅방id = this.dataset.id;
-                $('.chat-content').html('');
+        if (eventSouce != undefined) {
+          eventSouce.Close();
+        }
 
-                if(eventSouce != undefined){
-                    eventSouce.Close()
-                }
+        //프론트엔드에서 실시간 소통채널 여는법
+        eventSource = new EventSource("/message/" + 지금누른채팅방id);
+        eventSource.addEventListener("test", function (e) {
+          var 가져온거 = JSON.parse(e.data);
+          가져온거.forEach(function (i) {
+            $(".chat-content").append(
+              '<li><span class="chat-box">' + i.content + " </span></li>"
+            );
+          });
+        });
+      });
+    </script>
 
-                //프론트엔드에서 실시간 소통채널 여는법 
-                eventSource = new EventSource('/message/' + 지금누른채팅방id);
-                eventSource.addEventListener('test', function (e) {
-                    var 가져온거 = JSON.parse(e.data);
-                    가져온거.forEach(function(i) {
-                        $('.chat-content').append('<li><span class="chat-box">' + i.content + ' </span></li>')
-                    });
-                });
-
-            });
-
-
-
-        </script>
-
-        <!-- <script>
+    <!-- <script>
 
             var 지금누른채팅방id;
 
@@ -124,18 +121,14 @@
             })
         </script> -->
 
+    <!-- Optional JavaScript; choose one of the two! -->
 
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
 
-        <!-- Optional JavaScript; choose one of the two! -->
-
-        <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
-            crossorigin="anonymous"></script>
-
-
-
-</body>
-
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>
